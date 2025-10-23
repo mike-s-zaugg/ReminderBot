@@ -4,23 +4,41 @@ dotenv.config();
 const TOKEN = process.env.DISCORD_TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 
-import { Client, GatewayIntentBits, Partials, REST, Routes, SlashCommandBuilder } from "discord.js";
+import {
+  Client,
+  GatewayIntentBits,
+  Partials,
+  REST,
+  Routes,
+  SlashCommandBuilder
+} from "discord.js";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
   partials: [Partials.Channel]
 });
 
-// ✅ Reminder Command registrieren
+// ✅ Slash Command registrieren
 const commands = [
   new SlashCommandBuilder()
     .setName("remind")
     .setDescription("Erstellt eine Erinnerung")
-    .addStringOption(option =>
-      option.setName("zeit").setDescription("z.B. 10s, 5m, 1h").setRequired(true)
-    )
+    // 🟡 Required zuerst!
     .addStringOption(option =>
       option.setName("nachricht").setDescription("Deine Nachricht").setRequired(true)
+    )
+    // ⚪ Optional danach
+    .addIntegerOption(option =>
+      option.setName("days").setDescription("Tage").setRequired(false)
+    )
+    .addIntegerOption(option =>
+      option.setName("hours").setDescription("Stunden").setRequired(false)
+    )
+    .addIntegerOption(option =>
+      option.setName("minutes").setDescription("Minuten").setRequired(false)
+    )
+    .addIntegerOption(option =>
+      option.setName("seconds").setDescription("Sekunden").setRequired(false)
     )
 ].map(cmd => cmd.toJSON());
 
@@ -39,14 +57,25 @@ const rest = new REST({ version: "10" }).setToken(TOKEN);
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (interaction.commandName === "remind") {
-    const zeit = interaction.options.getString("zeit");
     const msg = interaction.options.getString("nachricht");
+    const days = interaction.options.getInteger("days") || 0;
+    const hours = interaction.options.getInteger("hours") || 0;
+    const minutes = interaction.options.getInteger("minutes") || 0;
+    const seconds = interaction.options.getInteger("seconds") || 0;
 
-    const match = zeit.match(/(\d+)(s|m|h)/);
-    if (!match) return interaction.reply("⚠️ Ungültiges Zeitformat. (z.B. 10s, 5m, 1h)");
+    const timeMs =
+      days * 24 * 60 * 60 * 1000 +
+      hours * 60 * 60 * 1000 +
+      minutes * 60 * 1000 +
+      seconds * 1000;
 
-    let timeMs = parseInt(match[1]) * (match[2] === "s" ? 1000 : match[2] === "m" ? 60000 : 3600000);
-    await interaction.reply(`⏳ Ich erinnere dich in ${zeit}: **${msg}**`);
+    if (timeMs === 0) {
+      return interaction.reply("⚠️ Bitte eine gültige Zeit angeben.");
+    }
+
+    await interaction.reply(
+      `⏳ Ich erinnere dich in ${days}d ${hours}h ${minutes}m ${seconds}s: **${msg}**`
+    );
 
     setTimeout(() => {
       interaction.followUp(`⏰ **Erinnerung:** ${msg}`);
