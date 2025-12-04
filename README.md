@@ -20,8 +20,8 @@ Ein einfacher Discord-Bot zum Erstellen von Erinnerungen per Slash-Command.
 2. Abhängigkeiten installieren:
    `npm install`
 3. `.env` Datei erstellen:
--DISCORD_TOKEN=dein_token
--CLIENT_ID=deine_client_id
+- DISCORD_TOKEN=dein_token
+- CLIENT_ID=deine_client_id
 
 4. Bot starten:
    `npm start`
