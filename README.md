@@ -45,6 +45,4 @@ Nach 10 Minuten:
 - Lang laufende Prozesses z. B. per PM2
 - Next Steps: DB, Mehrere Erinnerungen, DM Support, wiederkehrende Timer
 
-## Lizenz
-MIT
 
